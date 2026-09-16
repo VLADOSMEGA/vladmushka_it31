@@ -1,0 +1,129 @@
+vladosmega@MacBook-Pro-Vladosmega ~ % sqlite3 /Users/vladosmega/Documents/pw1_v1_Mushka.db
+SQLite version 3.51.0 2025-06-12 13:14:41
+Enter ".help" for usage hints.
+sqlite> PRAGMA foreign_keys = ON;
+sqlite> PRAGMA foreign_keys;
+1
+sqlite> CREATE TABLE readers (
+(x1...>     id INTEGER PRIMARY KEY,
+(x1...>     last_name TEXT,
+(x1...>     first_name TEXT,
+(x1...>     phone TEXT
+(x1...> );
+sqlite> юефидуі
+   ...> 
+   ...> .tables
+   ...> );
+Parse error: near "юефидуі": syntax error
+  юефидуі  .tables );
+  ^--- error here
+sqlite> .tables
+books    readers
+sqlite> CREATE TABLE loans (
+(x1...>     id INTEGER PRIMARY KEY,
+(x1...>     book_id INTEGER NOT NULL,
+(x1...>     reader_id INTEGER NOT NULL,
+(x1...>     issue_date TEXT NOT NULL,
+(x1...>     return_date TEXT,
+(x1...>     FOREIGN KEY (book_id) REFERENCES books(id),
+(x1...>     FOREIGN KEY (reader_id) REFERENCES readers(id)
+(x1...> );
+sqlite> .tables
+books    loans    readers
+sqlite> SELECT * FROM books;
+1||Тарас Шевченко|1840|Поезія|5
+2|Тигролови|Іван Багряний|1944|Роман|3
+3|Захар Беркут|Іван Франко|1883|Історичний роман|4
+4|Лісова пісня|Леся Українка|1911|Драма-феєрія|6
+5|Місто|Валер'ян Підмогильний|1928|Роман|2
+6|Маленький принц|Антуан де Сент-Екзюпері|1943|Казка|7
+7|Невідома книга|Невідомий автор|2020||1
+sqlite> INSERT INTO readers (id, last_name, first_name, phone) VALUES
+   ...> (1, 'Мушка', 'Влад', '+380501111111'),
+   ...> (2, 'Шевченко', 'Олег', '+380502222222'),
+   ...> (3, 'Петренко', 'Андрій', '+380503333333'),
+   ...> (4, 'Коваленко', 'Максим', '+380504444444'),
+   ...> (5, 'Бондаренко', 'Ірина', '+380505555555'),
+   ...> (6, 'Мельник', 'Анна', '+380506666666');
+sqlite> SELECT * FROM readers;
+1|Мушка|Влад|+380501111111
+2|Шевченко|Олег|+380502222222
+3|Петренко|Андрій|+380503333333
+4|Коваленко|Максим|+380504444444
+5|Бондаренко|Ірина|+380505555555
+6|Мельник|Анна|+380506666666
+sqlite> INSERT INTO loans (id, book_id, reader_id, issue_date, return_date) VALUES
+   ...> (1, 2, 1, '2026-09-01', '2026-09-10'),
+   ...> (2, 4, 2, '2026-09-02', '2026-09-12'),
+   ...> (3, 3, 3, '2026-09-03', NULL),
+   ...> (4, 6, 1, '2026-09-04', '2026-09-14'),
+   ...> (5, 5, 4, '2026-09-05', NULL),
+   ...> (6, 2, 5, '2026-09-06', '2026-09-13'),
+   ...> (7, 7, 6, '2026-09-07', NULL),
+   ...> (8, 4, 3, '2026-09-08', NULL),
+   ...> (9, 1, 2, '2026-09-09', '2026-09-15'),
+   ...> (10, 6, 5, '2026-09-10', NULL);
+sqlite> SELECT * FROM loans;
+1|2|1|2026-09-01|2026-09-10
+2|4|2|2026-09-02|2026-09-12
+3|3|3|2026-09-03|
+4|6|1|2026-09-04|2026-09-14
+5|5|4|2026-09-05|
+6|2|5|2026-09-06|2026-09-13
+7|7|6|2026-09-07|
+8|4|3|2026-09-08|
+9|1|2|2026-09-09|2026-09-15
+10|6|5|2026-09-10|
+sqlite> SELECT loans.id, books.title, readers.last_name, readers.first_name,
+   ...>        loans.issue_date, loans.return_date
+   ...> FROM loans
+   ...> JOIN books ON loans.book_id = books.id
+   ...> JOIN readers ON loans.reader_id = readers.id;
+1|Тигролови|Мушка|Влад|2026-09-01|2026-09-10
+2|Лісова пісня|Шевченко|Олег|2026-09-02|2026-09-12
+3|Захар Беркут|Петренко|Андрій|2026-09-03|
+4|Маленький принц|Мушка|Влад|2026-09-04|2026-09-14
+5|Місто|Коваленко|Максим|2026-09-05|
+6|Тигролови|Бондаренко|Ірина|2026-09-06|2026-09-13
+7|Невідома книга|Мельник|Анна|2026-09-07|
+8|Лісова пісня|Петренко|Андрій|2026-09-08|
+9||Шевченко|Олег|2026-09-09|2026-09-15
+10|Маленький принц|Бондаренко|Ірина|2026-09-10|
+sqlite> INSERT INTO loans (id, book_id, reader_id, issue_date, return_date)
+   ...> VALUES (11, 999, 1, '2026-09-16', NULL);
+Runtime error: FOREIGN KEY constraint failed (19)
+sqlite> PRAGMA foreign_key_list(loans);
+0|0|readers|reader_id|id|NO ACTION|NO ACTION|NONE
+1|0|books|book_id|id|NO ACTION|NO ACTION|NONE
+sqlite> .schema readers
+CREATE TABLE readers (
+    id INTEGER PRIMARY KEY,
+    last_name TEXT,
+    first_name TEXT,
+    phone TEXT
+);
+sqlite> .schema loans
+CREATE TABLE loans (
+    id INTEGER PRIMARY KEY,
+    book_id INTEGER NOT NULL,
+    reader_id INTEGER NOT NULL,
+    issue_date TEXT NOT NULL,
+    return_date TEXT,
+    FOREIGN KEY (book_id) REFERENCES books(id),
+    FOREIGN KEY (reader_id) REFERENCES readers(id)
+);
+sqlite> .tables
+books    loans    readers
+sqlite> SELECT 'books' AS table_name, COUNT(*) AS records FROM books
+   ...> UNION ALL
+   ...> SELECT 'readers', COUNT(*) FROM readers
+   ...> UNION ALL
+   ...> SELECT 'loans', COUNT(*) FROM loans;
+books|7
+readers|6
+loans|10
+sqlite> .quit
+vladosmega@MacBook-Pro-Vladosmega ~ % cd ~/Documents
+vladosmega@MacBook-Pro-Vladosmega Documents % pwd
+/Users/vladosmega/Documents
+vladosmega@MacBook-Pro-Vladosmega Documents % 
