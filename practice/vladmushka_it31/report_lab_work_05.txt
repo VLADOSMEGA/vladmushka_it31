@@ -1,0 +1,286 @@
+PRAGMA foreign_keys = ON;
+
+Ця команда вмикає перевірку зовнішніх ключів у базі даних. SQLite перевіряє правильність зв’язків між таблицями.
+
+.schema loans
+
+Ця команда показує структуру таблиці loans, зокрема її поля, типи даних та зовнішні ключі.
+
+CREATE TABLE loans (
+id INTEGER PRIMARY KEY,
+book_id INTEGER NOT NULL,
+reader_id INTEGER NOT NULL,
+issue_date TEXT NOT NULL,
+return_date TEXT,
+FOREIGN KEY (book_id) REFERENCES books(id),
+FOREIGN KEY (reader_id) REFERENCES readers(id)
+);
+
+Ця команда показує створення таблиці loans. Поля book_id і reader_id є зовнішніми ключами, які пов’язують loans відповідно з таблицями books і readers.
+
+PRAGMA foreign_key_check;
+
+Ця команда перевіряє базу даних на наявність порушень зовнішніх ключів. Відсутність результату означає, що помилок у зв’язках між таблицями не виявлено.
+
+PRAGMA foreign_keys = OFF;
+
+Ця команда тимчасово вимикає перевірку зовнішніх ключів. Це потрібно для безпечного перестворення таблиці readers, оскільки вона пов’язана з таблицею loans.
+
+CREATE TABLE readers_new (
+id INTEGER PRIMARY KEY,
+last_name TEXT NOT NULL,
+first_name TEXT,
+phone TEXT
+);
+
+Ця команда створює нову таблицю readers_new. Для поля last_name встановлено обмеження NOT NULL, тому воно обов’язково повинно містити значення.
+
+INSERT INTO readers_new
+SELECT * FROM readers;
+
+Ця команда копіює всі записи зі старої таблиці readers у нову таблицю readers_new. Завдяки цьому наявні дані зберігаються.
+
+DROP TABLE readers;
+
+Ця команда видаляє стару таблицю readers після того, як її дані були перенесені до readers_new.
+
+ALTER TABLE readers_new RENAME TO readers;
+
+Ця команда перейменовує таблицю readers_new назад на readers. Таким чином, нова таблиця отримує початкову назву.
+
+PRAGMA foreign_keys = ON;
+
+Ця команда знову вмикає перевірку зовнішніх ключів після завершення перестворення таблиці.
+
+.schema readers
+
+Ця команда показує структуру таблиці readers і дозволяє перевірити, що поле last_name тепер має обмеження NOT NULL.
+
+CREATE TABLE IF NOT EXISTS "readers" (
+id INTEGER PRIMARY KEY,
+last_name TEXT NOT NULL,
+first_name TEXT,
+phone TEXT
+);
+
+Це результат виконання команди .schema readers. Він підтверджує, що для last_name встановлено NOT NULL.
+
+INSERT INTO readers (id, first_name, phone)
+VALUES (7, 'Тест', '+380507777777');
+
+Ця команда намагається додати нового читача, але поле last_name навмисно не вказане.
+
+Runtime error: NOT NULL constraint failed: readers.last_name (19)
+
+Ця помилка виникла тому, що поле last_name має обмеження NOT NULL, а під час додавання нового запису значення для цього поля не було задано.
+
+PRAGMA foreign_keys = OFF;
+
+Ця команда знову тимчасово вимикає перевірку зовнішніх ключів перед перестворенням таблиці readers.
+
+CREATE TABLE readers_new (
+id INTEGER PRIMARY KEY,
+last_name TEXT NOT NULL,
+first_name TEXT,
+phone TEXT UNIQUE
+);
+
+Ця команда створює нову таблицю readers_new. Окрім NOT NULL для last_name, для поля phone встановлено UNIQUE, тому номери телефонів не можуть повторюватися.
+
+INSERT INTO readers_new
+SELECT * FROM readers;
+
+Ця команда переносить усі існуючі записи з таблиці readers до нової таблиці readers_new.
+
+DROP TABLE readers;
+
+Ця команда видаляє стару таблицю readers після перенесення її даних.
+
+ALTER TABLE readers_new RENAME TO readers;
+
+Ця команда перейменовує readers_new на readers, щоб зберегти початкову назву таблиці.
+
+PRAGMA foreign_keys = ON;
+
+Ця команда знову вмикає перевірку зовнішніх ключів.
+
+.schema readers
+
+Ця команда показує структуру таблиці readers. У результаті видно, що поле phone тепер має обмеження UNIQUE.
+
+CREATE TABLE IF NOT EXISTS "readers" (
+id INTEGER PRIMARY KEY,
+last_name TEXT NOT NULL,
+first_name TEXT,
+phone TEXT UNIQUE
+);
+
+Це результат виконання .schema readers. Він підтверджує наявність обмежень NOT NULL для last_name та UNIQUE для phone.
+
+INSERT INTO readers (id, last_name, first_name, phone)
+VALUES (7, 'Тест', 'Тест', '+380501111111');
+
+Ця команда намагається додати нового читача з номером телефону +380501111111, який уже використовується іншим читачем.
+
+Runtime error: UNIQUE constraint failed: readers.phone (19)
+
+Ця помилка виникла тому, що обмеження UNIQUE забороняє додавати однакові значення в поле phone.
+
+PRAGMA foreign_keys = OFF;
+
+Ця команда тимчасово вимикає перевірку зовнішніх ключів перед перестворенням таблиці books.
+
+CREATE TABLE books_new (
+id INTEGER PRIMARY KEY,
+title TEXT,
+author TEXT,
+publication_year INTEGER,
+genre TEXT,
+copies_count INTEGER CHECK (copies_count >= 0)
+);
+
+Ця команда створює нову таблицю books_new. Для поля copies_count встановлено обмеження CHECK, яке дозволяє тільки значення, більші або рівні нулю.
+
+INSERT INTO books_new
+SELECT * FROM books;
+
+Ця команда копіює всі наявні записи з таблиці books до books_new, щоб зберегти дані.
+
+DROP TABLE books;
+
+Ця команда видаляє стару таблицю books після перенесення її даних.
+
+ALTER TABLE books_new RENAME TO books;
+
+Ця команда перейменовує books_new на books.
+
+PRAGMA foreign_keys = ON;
+
+Ця команда знову вмикає перевірку зовнішніх ключів після перестворення таблиці.
+
+.schema books
+
+Ця команда показує структуру таблиці books та дозволяє перевірити встановлене обмеження CHECK.
+
+CREATE TABLE IF NOT EXISTS "books" (
+id INTEGER PRIMARY KEY,
+title TEXT,
+author TEXT,
+publication_year INTEGER,
+genre TEXT,
+copies_count INTEGER CHECK (copies_count >= 0)
+);
+
+Це результат виконання .schema books. Він підтверджує, що для copies_count встановлено CHECK (copies_count >= 0).
+
+INSERT INTO books (id, title, author, publication_year, genre, copies_count)
+VALUES (8, 'Тестова книга', 'Тестовий автор', 2026, 'Тест', -1);
+
+Ця команда намагається додати книгу з кількістю примірників -1, щоб перевірити роботу обмеження CHECK.
+
+Runtime error: CHECK constraint failed: copies_count >= 0 (19)
+
+Ця помилка виникла тому, що значення -1 не відповідає умові copies_count >= 0. Від’ємна кількість примірників не допускається.
+
+INSERT INTO books (id, title, author, publication_year, genre, copies_count)
+VALUES (8, 'Тестова книга', 'Тестовий автор', 2026, 'Тест', 3);
+
+Ця команда додає тестову книгу з кількістю примірників 3. Значення 3 відповідає умові CHECK, тому помилки не виникає.
+
+SELECT * FROM books WHERE id = 8;
+
+Ця команда виводить запис із таблиці books, у якого id дорівнює 8, щоб перевірити результат попередньої операції.
+
+8|Тестова книга|Тестовий автор|2026|Тест|3
+
+Цей результат підтверджує, що тестова книга була успішно додана, а кількість примірників дорівнює 3.
+
+DELETE FROM books WHERE id = 8;
+
+Ця команда видаляє тестову книгу з id 8 після перевірки роботи обмеження CHECK.
+
+PRAGMA foreign_keys = OFF;
+
+Ця команда тимчасово вимикає перевірку зовнішніх ключів перед повторним перестворенням таблиці books.
+
+CREATE TABLE books_new (
+id INTEGER PRIMARY KEY,
+title TEXT,
+author TEXT,
+publication_year INTEGER,
+genre TEXT,
+copies_count INTEGER NOT NULL DEFAULT 1 CHECK (copies_count >= 0)
+);
+
+Ця команда створює нову таблицю books_new. Для copies_count встановлено три обмеження: NOT NULL забороняє порожнє значення, DEFAULT 1 автоматично встановлює значення 1, а CHECK забороняє від’ємні значення.
+
+INSERT INTO books_new
+SELECT * FROM books;
+
+Ця команда переносить усі наявні записи з таблиці books до нової таблиці books_new.
+
+DROP TABLE books;
+
+Ця команда видаляє стару таблицю books після перенесення даних.
+
+ALTER TABLE books_new RENAME TO books;
+
+Ця команда перейменовує books_new на books, щоб нова таблиця мала початкову назву.
+
+PRAGMA foreign_keys = ON;
+
+Ця команда знову вмикає перевірку зовнішніх ключів.
+
+.schema books
+
+Ця команда показує структуру таблиці books і підтверджує наявність NOT NULL, DEFAULT 1 та CHECK для поля copies_count.
+
+CREATE TABLE IF NOT EXISTS "books" (
+id INTEGER PRIMARY KEY,
+title TEXT,
+author TEXT,
+publication_year INTEGER,
+genre TEXT,
+copies_count INTEGER NOT NULL DEFAULT 1 CHECK (copies_count >= 0)
+);
+
+Це результат виконання .schema books. Він підтверджує, що поле copies_count має обмеження NOT NULL, DEFAULT 1 і CHECK.
+
+INSERT INTO books (id, title, author, publication_year, genre)
+VALUES (8, 'Книга за замовчуванням', 'Тестовий автор', 2026, 'Тест');
+
+Ця команда додає нову книгу без зазначення copies_count. Оскільки для цього поля встановлено DEFAULT 1, SQLite автоматично встановлює значення 1.
+
+SELECT * FROM books WHERE id = 8;
+
+Ця команда перевіряє створений запис із id 8.
+
+8|Книга за замовчуванням|Тестовий автор|2026|Тест|1
+
+Цей результат підтверджує, що SQLite автоматично встановив copies_count = 1.
+
+UPDATE books
+SET copies_count = -5
+WHERE id = 8;
+
+Ця команда намагається змінити кількість примірників книги на -5. Значення порушує умову CHECK.
+
+Runtime error: CHECK constraint failed: copies_count >= 0 (19)
+
+Ця помилка виникла тому, що CHECK забороняє встановлювати для copies_count від’ємні значення. Це показує, що CHECK працює не тільки під час INSERT, а й під час UPDATE.
+
+SELECT * FROM books WHERE id = 8;
+
+Ця команда повторно виводить книгу з id 8, щоб перевірити, чи змінилося значення після невдалого UPDATE.
+
+8|Книга за замовчуванням|Тестовий автор|2026|Тест|1
+
+Цей результат показує, що значення copies_count залишилося 1, оскільки некоректне оновлення було відхилено обмеженням CHECK.
+
+NOT NULL — не дозволяє залишати обов’язкове поле порожнім, тому забезпечує наявність необхідних даних.
+
+UNIQUE — не дозволяє дублювати значення в полі, тому кожен номер телефону читача має бути унікальним.
+
+CHECK — перевіряє відповідність значення заданій умові, тому кількість примірників книги не може бути від’ємною.
+
+DEFAULT — автоматично встановлює значення, якщо воно не було вказане під час додавання запису, тому для нової книги copies_count автоматично отримує значення 1.
