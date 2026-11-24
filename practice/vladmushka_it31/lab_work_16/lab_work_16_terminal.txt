@@ -1,0 +1,79 @@
+curl -L "https://my-cd-rom.github.io/data-bases-course/practice/csv/14-csv-import/v1_new_rows.csv" -o v1_new_rows.csv
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   652  100   652    0     0   1473      0 --:--:-- --:--:-- --:--:--  1471
+vladosmega@MacBook-Pro-Vladosmega lab_work_16 % cat v1_new_rows.csv
+title,author,publication_year,genre,copies_count
+Інтернат,Сергій Жадан,2017,роман,3
+Століття Якова,Володимир Лис,2010,роман,2
+Соловейко,Аркадій Хойнацький,2019,повість,1
+Фелікс Австрія,Софія Андрухович,2014,роман,3
+Танго смерті,Юрій Винничук,2012,роман,2
+Музей покинутих секретів,Оксана Забужко,2009,роман,1
+Оксамитові прописи,Ірен Роздобудько,2015,повість,2
+Клавка,Маркіян Камиш,2019,роман,1
+vladosmega@MacBook-Pro-Vladosmega lab_work_16 % sqlite3 lab_work_16.db
+SQLite version 3.51.0 2025-06-12 13:14:41
+Enter ".help" for usage hints.
+sqlite> CREATE TABLE books_staging (
+(x1...>     title TEXT,
+(x1...>     author TEXT,
+(x1...>     publication_year INTEGER,
+(x1...>     genre TEXT,
+(x1...>     copies_count INTEGER
+(x1...> );
+sqlite> .mode csv
+sqlite> .import --skip 1 v1_new_rows.csv books_staging
+sqlite> SELECT * FROM books_staging;
+"Інтернат","Сергій Жадан",2017,"роман",3
+"Століття Якова","Володимир Лис",2010,"роман",2
+"Соловейко","Аркадій Хойнацький",2019,"повість",1
+"Фелікс Австрія","Софія Андрухович",2014,"роман",3
+"Танго смерті","Юрій Винничук",2012,"роман",2
+"Музей покинутих секретів","Оксана Забужко",2009,"роман",1
+"Оксамитові прописи","Ірен Роздобудько",2015,"повість",2
+"Клавка","Маркіян Камиш",2019,"роман",1
+sqlite> INSERT INTO books (title, author, publication_year, genre, copies_count)
+   ...> SELECT title, author, publication_year, genre, copies_count
+   ...> FROM books_staging;
+sqlite> DROP TABLE books_staging;
+sqlite> SELECT COUNT(*) FROM books;
+16
+sqlite> SELECT id, title, author
+   ...> FROM books
+   ...> WHERE id > 8;
+9,"Інтернат","Сергій Жадан"
+10,"Століття Якова","Володимир Лис"
+11,"Соловейко","Аркадій Хойнацький"
+12,"Фелікс Австрія","Софія Андрухович"
+13,"Танго смерті","Юрій Винничук"
+14,"Музей покинутих секретів","Оксана Забужко"
+15,"Оксамитові прописи","Ірен Роздобудько"
+16,"Клавка","Маркіян Камиш"
+sqlite> .quit
+vladosmega@MacBook-Pro-Vladosmega lab_work_16 % cp ../lab_work_15/lab_work_15.db lab_work_16_test.db
+vladosmega@MacBook-Pro-Vladosmega lab_work_16 % sqlite3 lab_work_16_test.db
+SQLite version 3.51.0 2025-06-12 13:14:41
+Enter ".help" for usage hints.
+sqlite> .mode csv
+sqlite> .import --skip 1 v1_new_rows.csv books
+v1_new_rows.csv:2: expected 6 columns but found 5 - filling the rest with NULL
+v1_new_rows.csv:2: INSERT failed: datatype mismatch
+v1_new_rows.csv:3: expected 6 columns but found 5 - filling the rest with NULL
+v1_new_rows.csv:3: INSERT failed: datatype mismatch
+v1_new_rows.csv:4: expected 6 columns but found 5 - filling the rest with NULL
+v1_new_rows.csv:4: INSERT failed: datatype mismatch
+v1_new_rows.csv:5: expected 6 columns but found 5 - filling the rest with NULL
+v1_new_rows.csv:5: INSERT failed: datatype mismatch
+v1_new_rows.csv:6: expected 6 columns but found 5 - filling the rest with NULL
+v1_new_rows.csv:6: INSERT failed: datatype mismatch
+v1_new_rows.csv:7: expected 6 columns but found 5 - filling the rest with NULL
+v1_new_rows.csv:7: INSERT failed: datatype mismatch
+v1_new_rows.csv:8: expected 6 columns but found 5 - filling the rest with NULL
+v1_new_rows.csv:8: INSERT failed: datatype mismatch
+v1_new_rows.csv:9: expected 6 columns but found 5 - filling the rest with NULL
+v1_new_rows.csv:9: INSERT failed: datatype mismatch
+sqlite> SELECT COUNT(*) FROM books;
+8
+sqlite> .quit
+vladosmega@MacBook-Pro-Vladosmega lab_work_16 % 
